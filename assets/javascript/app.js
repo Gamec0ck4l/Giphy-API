@@ -1,79 +1,78 @@
-var animals = ["dog", "cat", "rabbit", "pig", "horse"];
+var celebrities = ["Leonardo Dicaprio", "Will Smith", "Donald Trump"]; 
 
-
+// Function to display celebrity data
 function renderButtons() {
 
-		$("#animals-view").empty();
+	$("#celebrity-view").empty();                              // Empties the div holding the buttons so they won't repeat
 
-		for (var i = 0; i < animals.length; i++) {
-			var createButton = $("<button>");
-			createButton.addClass("animal");
-			createButton.attr("data-name", animals[i]);
-			createButton.text(animals[i]);
-			$("#animals-view").append(createButton);
-
-		}
+	for (var i = 0; i < celebrities.length; i++) {             // Looping arrary of celebrities
+		var createButton = $("<button>");                        // Creates button for each celebrity in the array
+		createButton.addClass("celebrity");                      // Adding class of "celebrity" to each button
+		createButton.attr("data-name", celebrities[i]);          // Adding attribute of data-name to each button
+		createButton.text(celebrities[i]);                       // Adding the text to each button
+		$("#celebrity-view").append(createButton);               // Adds buttons to the div hold the buttons
+	}
 }
+  
+	$("#add-celebrity").on("click", function() {               // Function when the Submit button is clicked                        
+ 		event.preventDefault();                                  
+ 		var celebrity = $("#celebrity-input").val().trim();      // Gets the value from the input field
+ 		celebrities.push(celebrity);                             // Puses the value to the end of the array
 
-		$("#add-animal").on("click", function() {
-	 		event.preventDefault();
-	 		var animal = $("#animal-input").val().trim();
-	 		animals.push(animal);
-
-	 	renderButtons();
-      });
-
-		renderButtons()
-
-///////////////////////////////////////////
-
- $("button").on("click", function() {
-      // Grabbing and storing the data-animal property value from the button
-      var animal = $(this).attr("data-name");
-
-      // Constructing a queryURL using the animal name
-      var queryURL = "http://api.giphy.com/v1/gifs/search?q=" +
-        animal + "&api_key=dc6zaTOxFJmzC&limit=10";
-
-      // Performing an AJAX request with the queryURL
-      $.ajax({
-          url: queryURL,
-          method: "GET"
-        })
-        // After data comes back from the request
-        .done(function(response) {
-          console.log(queryURL);
-
-          console.log(response);
-          // storing the data from the AJAX request in the results variable
-          var results = response.data;
-
-          // Looping through each result item
-          for (var i = 0; i < results.length; i++) {
-
-            // Creating and storing a div tag
-            var animalDiv = $("<div>");
-
-            // Creating a paragraph tag with the result item's rating
-            var p = $("<p>").text("Rating: " + results[i].rating);
-
-            // Creating and storing an image tag
-            var animalImage = $("<img>");
-            // Setting the src attribute of the image to a property pulled off the result item
-            animalImage.attr("src", results[i].images.fixed_height.url);
-
-            // Appending the paragraph and image tag to the animalDiv
-            animalDiv.append(p);
-            animalDiv.append(animalImage);
-
-            // Prependng the animalDiv to the HTML page in the "#gifs-appear-here" div
-            $("#gifs-appear-here").prepend(animalDiv);
-          }
-        });
+ 	renderButtons();                                           // Calls function to process array                      
     });
 
+	renderButtons()                                            // Calls function to display the fist set of buttons                                                                          
 
+ // Function to pull API data and displays it
+function displayCelebrityInfo() {
 
+  $("#gif-display").empty();                                 // Empties the div holding the gifs 
+  var celebrity = $(this).attr("data-name");                 //  
+  var queryURL = "http://api.giphy.com/v1/gifs/search?q=" +
+    celebrity + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+  $.ajax({                                                    // Ajax call with the queryURL 
+      url: queryURL,
+      method: "GET"
+    })
+    
+    .done(function(response) {                                // Data gets retreived 
+      var results = response.data;                            // Data gets stored in results variable
+
+      for (var i = 0; i < results.length; i++) {              // Loops throught each item in the data
+
+        var celebrityDiv = $("<div>");                        // Creates a div tag    
+        var celebrityImage = $("<img>");                      // Creates an img tag
+        var celebrityRating = $("<p>").text("Rating: " + results[i].rating);          // Creates a paragraph tag displaying the rating
+
+        celebrityImage.attr("src", results[i].images.fixed_height_still.url);         // Adding src attribute with the still URL for each image
+        celebrityImage.attr("data-still", results[i].images.fixed_height_still.url);  // Adding data-still with the still URL attributes each image for each image
+        celebrityImage.attr("data-animate", results[i].images.fixed_height.url);      // Adding data-animate attributes with the animated URL to each image        
+        celebrityImage.attr("data-state", "still");                                   // Adding data-state called still to each image
+        celebrityImage.attr("class", "gif");                                          // Adding class called gif to each image
+
+        celebrityDiv.append(celebrityRating);                 // Displays the rating to the celebrityDiv    
+        celebrityDiv.append(celebrityImage);                  // Displays the image to the celebrityDiv
+        $("#gif-display").prepend(celebrityDiv);              // Displays the celebrityDiv within the div called gif-display
+      }
+
+      // Animating gifs
+      $(".gif").on("click", function() {                      // Function when an image is clicked 
+      var state = $(this).attr("data-state");                 // Allow to get any attribute on our HTML element
+        if (state === "still") {                              // If the clicked image's state is still...
+          $(this).attr("src", $(this).attr("data-animate"));  // Update it's src attribute to data-animate attribute
+          $(this).attr("data-state", "animate");              // Then set the image's data-state to animate
+        } else {
+          $(this).attr("src", $(this).attr("data-still"));    // Update it's src attribute to data-animate attribute 
+          $(this).attr("data-state", "still");                // Then set the image's data-state to still
+        }
+      });
+  });
+}
+
+ $(document).on("click", ".celebrity", displayCelebrityInfo); /* Adding click listener to all button elements with a class
+                                                                  of "celebrity" which runs the function displayCelebrityInfo */
 
 
 
